@@ -39,8 +39,8 @@ public class KMean {
     }
     public static void generateKInitialCentroids() {
         Centroid = new Point[Const.K];
-        // set the K-centroids to the first K-items
         
+        //shuffle the sequence to select randomly K points as Centroid
         int[] Index = new int[Const.N];
         for(int i = 0; i < Const.N; i++) {
             Index[i] = i;
