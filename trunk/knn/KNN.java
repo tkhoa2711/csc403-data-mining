@@ -42,15 +42,32 @@ public class KNN {
         } catch (IOException e) {
             System.out.println("There is no input file");
             return null;
-        }
-        
+        } 
     }
+
+    public static parseOptions(String trainData, String testData, int k, int d, String[] args) {
+        try {
+            trainData = args[0];
+            testData = args[1];
+            for (int i = 2; i < args.length; i++) {
+                if (args[i].equals("-k"))
+                    k = Integer.parseInt(args[i++]);
+                else if (args[i].equals("-d"))
+                    d = Integer.parseInt(args[i++]);                
+            }
+        } catch (Exception e) {
+            System.out.println("Error parsing command line options");
+        }
+    }
+
     public static void main(String[] args) {
         
-        String traindata = "";
-        String testdata = "";
-        dataTrain = dataInput(traindata);
-        dataTest = dataInput(testdata);
+        String trainData = "";
+        String testData = "";
+        parseOptions(trainData, testData, Const.K, Const.D, args);
+
+        dataTrain = dataInput(trainData);
+        dataTest = dataInput(testData);
         
         for (int i = 0; i<dataTest.length;i++){                     
             
