@@ -45,7 +45,7 @@ public class KNN {
         } 
     }
 
-    public static parseOptions(String trainData, String testData, int k, int d, String[] args) {
+    public static void parseOptions(String trainData, String testData, int k, int d, String[] args) {
         try {
             trainData = args[0];
             testData = args[1];
@@ -68,6 +68,9 @@ public class KNN {
 
         dataTrain = dataInput(trainData);
         dataTest = dataInput(testData);
+        double[] predictedLabel = new double[dataTest.length];
+        double accuracy;
+        double timecost = 0;
         
         for (int i = 0; i<dataTest.length;i++){                     
             
@@ -86,17 +89,26 @@ public class KNN {
                     
             }
             
+            //get index of K nearesr neighbor 
             int[] neighbor = new int[Const.K];
             neighbor = getMinIndex(Const.K,distance);
             
+            //get label of K nearest neighbor
             double[] neighborLabel = new double[Const.K];
             for(int j = 0; j<Const.K;j++){
-                neighborLabel[j] = dataTest[neighbor[j]].getLabel();
+                neighborLabel[j] = dataTrain[neighbor[j]].getLabel();
             }
             
+            //assign predicted label to test point 
+            predictedLabel[i] = identifyLabel(neighborLabel);
+            //compute accuracy of the predicted label
+            accuracy = computeAcc(dataTest,predictedLabel);
             
-            
+            //print output file
+            dataOutput(dataTest,predictedLabel,accuracy,timecost);
         }
+        
+        
     }
     
     public static int[] getMinIndex(int k, double[] d){
@@ -131,5 +143,52 @@ public class KNN {
         return res;
     }
     
+    public static double identifyLabel(double[] neighborLabel){
+        double predictedLabel = -1;
+            Label[] labelList = new Label[Const.C];
+            int countlabel = 0;
+            boolean addMem = false;
+            
+            for(int i = 0; i<neighborLabel.length;i++){
+                addMem = false;
+                for (int j=0; j<countlabel;j++){
+                    if (neighborLabel[i] == labelList[j].getLabel()){
+                        labelList[j].addMember();
+                        addMem = true;
+                        break;
+                    }                        
+                }
+                if (!addMem){
+                    labelList[countlabel] = new Label(neighborLabel[i]); 
+                    labelList[countlabel].addMember();
+                    countlabel++;
+                }
+            }
+            int maxMemberCount = 0;
+            int index = -1;
+            for(int i = 0; i < countlabel; i++){
+                if(labelList[i].getMembersCount()> maxMemberCount){
+                    maxMemberCount = labelList[i].getMembersCount();
+                    index = i;
+                }   
+            }
+            predictedLabel = labelList[index].getLabel();
+        return predictedLabel;
+    }
     
+    public static double computeAcc(Point[] trueLabel, double[] predictedLabel){
+        double acc = 0;
+        int truecount=0;
+        for(int i=0; i < trueLabel.length;i++){
+            if (trueLabel[i].getLabel()==predictedLabel[i])
+                truecount++;
+        }
+        acc = truecount/trueLabel.length;
+        return acc;
+        
+    }
+    
+    public static void dataOutput(Point[] dataTest, double[] predictedLabel, double accuracy, double timeCost){
+        
+    }
 }
