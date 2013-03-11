@@ -31,6 +31,6 @@ public class Label {
     }
     
     public void addMember(){
-        this.membersCount ++ ;
+        this.membersCount++ ;
     }
 }
