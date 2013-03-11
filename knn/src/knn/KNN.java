@@ -130,7 +130,7 @@ public class KNN {
 		dataOutput(predictionFile, dataTest, predictedLabel);
 
 		System.out.println("Accuracy = " + (accuracy*100) + "%");;
-		System.out.println("Timecost = " + ((double)duration/1000000) + "seconds");
+		System.out.println("Timecost = " + ((double)duration/1000000000) + "seconds");
 	}
 	
 	public static int[] getMinIndex(int k, double[] d){
