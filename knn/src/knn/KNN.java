@@ -8,6 +8,8 @@ import java.io.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Scanner;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  *
@@ -54,6 +56,7 @@ public class KNN {
 		String predictionFile = "";
 		long startTime = System.nanoTime();
 		
+		// Parse command line options
 		try {
 			if (args.length < 3) {
 				System.out.println("Insufficient command line options");				
@@ -78,14 +81,20 @@ public class KNN {
 
 		dataTrain = dataInput(trainDataFile);
 		dataTest = dataInput(testDataFile);
+
+		// Get number of class labels
+		List<Double> labelList = new ArrayList<Double>();		
+		for (int i = 0; i < dataTrain.length; i++) {
+			if (!labelList.contains(Double.valueOf(dataTrain[i].getLabel())))
+				labelList.add(Double.valueOf(dataTrain[i].getLabel()));
+		}
+		C = labelList.size();
+
 		double[] predictedLabel = new double[dataTest.length];
 		
-		for (int i = 0; i<dataTest.length;i++){                     
-			
+		for (int i = 0; i<dataTest.length;i++){  
 			double[] distance = new double[dataTrain.length];
-			
 			for (int j = 0; j<dataTrain.length;j++){
-				
 				switch(METRIC){
 					case 0: 
 						distance[j]= dataTest[i].getCosDistance(dataTrain[j]);
@@ -117,11 +126,11 @@ public class KNN {
 		double accuracy = computeAcc(dataTest,predictedLabel);
 		
 		//print output file
-		predictionFile = testDataFile.concat("_prediction");
+		predictionFile = testDataFile.concat("_prediction.txt");
 		dataOutput(predictionFile, dataTest, predictedLabel);
 
 		System.out.println("Accuracy = " + (accuracy*100) + "%");;
-		System.out.println("Timecost = " + (duration*1000000) + "seconds");
+		System.out.println("Timecost = " + ((double)duration/1000000) + "seconds");
 	}
 	
 	public static int[] getMinIndex(int k, double[] d){
@@ -162,7 +171,7 @@ public class KNN {
 		int countlabel = 0;
 		boolean addMem = false;
 		
-		for(int i = 0; i<neighborLabel.length;i++){
+		for(int i = 0; i<labelList.length;i++){
 			addMem = false;
 			for (int j=0; j<countlabel;j++){
 				if (neighborLabel[i] == labelList[j].getLabel()){
@@ -193,10 +202,10 @@ public class KNN {
 		double acc = 0;
 		int truecount=0;
 		for(int i=0; i < trueLabel.length;i++){
-			if (trueLabel[i].getLabel()==predictedLabel[i])
+			if (Double.valueOf(trueLabel[i].getLabel()).compareTo(Double.valueOf(predictedLabel[i])) == 0)
 				truecount++;
 		}
-		acc = truecount/trueLabel.length;
+		acc = (double)truecount/trueLabel.length;
 		return acc;
 		
 	}

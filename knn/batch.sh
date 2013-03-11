@@ -14,4 +14,4 @@ javac src/knn/*.java
 # Run program
 # java -jar knn.jar $training_set_file $test_set_file -k $k -d $d
 # java -cp src/ knn.KNN $training_set_file $test_set_file -k $k -d $d
-java -cp /src/ knn.KNN ../dataset/classification/iris_train.txt ./dataset/classification/iris_test.txt -k 5 -d 2
+java -cp src/ knn.KNN ../dataset/classification/iris_train.txt ../dataset/classification/iris_test.txt -k 5 -d 2
