@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package kNN;
+package knn;
 
 import java.math.*;
 /**
@@ -18,7 +18,7 @@ public class Point {
         
     }
     
-    public Point(double[] a) {
+    public Point(double[] data) {
         this.data = data;
     }
     
