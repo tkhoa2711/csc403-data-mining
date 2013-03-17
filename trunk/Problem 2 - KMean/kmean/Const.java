@@ -9,7 +9,7 @@ package kmean;
  * @author Vu
  */
 public class Const {
-    public static int K = 100;
+    public static int K = 200;
     public static int N;
     public static int D;
     public static int C;

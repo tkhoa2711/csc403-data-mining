@@ -64,10 +64,10 @@ public class KMean {
         int[] Index = new int[Const.N];
         for(int i = 0; i < Const.N; i++) {
             Index[i] = i;
-            int j = (int)(Math.random() * i);
+        /*    int j = (int)(Math.random() * i);
             int tmp = Index[i];
             Index[i] = Index[j];
-            Index[j] = tmp;
+            Index[j] = tmp;*/
         }
         
         System.out.print("Select points as centroids: ");
@@ -117,33 +117,30 @@ public class KMean {
         }
     }
     
-    public static void KMeanAlgorithmTriangleInequality() {
+    public static void kMeanAlgorithmTriangleInequality() {
         Point[] nextCentroid = new Point[Const.K];
         int[] noOfPoint = new int[Const.K];
-        
+        double[] temp = new double[Const.K];
         double[] upperBound = new double[Const.N];
         double[][] lowerBound = new double[Const.N][Const.K];
         double[][] centerDist = new double[Const.K][Const.K];
         double[] minDistToCenter = new double[Const.K];
         boolean[] notUpdate = new boolean[Const.N];
         
+        //initilize
         for(int i = 0; i < Const.K; i++) {
             nextCentroid[i] = new Point(Const.D);
         }
-        
-        //initilize
         for(int i = 0; i < Const.N; i++) {
             notUpdate[i] = true;
         }
         for(int i = 0; i < Const.N; i++) { //find the class label for Point i
            double minDistance = data[i].getDistance(Centroid[0]);
            lowerBound[i][0] = minDistance;
-           //lowerBound[i][0] = 0;
            int curClassLabel = 0;
            for(int j = 1; j < Const.K; j++) {
                double distance = data[i].getDistance(Centroid[j]);
                lowerBound[i][j] = distance;
-               //lowerBound[i][j] = 0;
                if (distance < minDistance) {
                    minDistance = distance;
                    curClassLabel = j;
@@ -154,9 +151,40 @@ public class KMean {
            upperBound[i] = minDistance;
        }
        double prevSSE = 0; 
-        // iterate the K-mean process Const.max_it times
        for(int iter = 0; iter < Const.max_it; iter++) {
-
+            // update the centroid
+            for(int i = 0; i < Const.K; i++) {
+                nextCentroid[i].setZero();
+                noOfPoint[i] = 0;
+            }
+            for(int i = 0; i < Const.N; i++) {
+                nextCentroid[ data[i].label ].addPoint(data[i]);
+                noOfPoint[ data[i].label]++;
+            }
+            for(int i = 0; i < Const.K; i++) {
+                if (noOfPoint[i] > 0) {
+                    nextCentroid[i].divide(noOfPoint[i]);
+                }
+            }
+            for(int center = 0; center < Const.K; center++) {
+                temp[center] = Centroid[center].getDistance(nextCentroid[center]);
+            }
+            for(int i = 0; i < Const.N; i++) {
+                for(int center = 0; center < Const.K; center++) {
+                    lowerBound[i][center] = Math.max(0.0, lowerBound[i][center] - temp[center]);
+                }
+                
+                upperBound[i] = upperBound[i] + temp[data[i].label];
+                notUpdate[i] = true;
+            }
+            if (iter == Const.max_it - 1) {
+                System.out.println("REACH ITER");
+                break;
+            }
+            //System.out.println();
+            for(int i = 0; i < Const.K; i++) {
+                Centroid[i].setData(nextCentroid[i]);
+            }
             //step 1
             for(int center1 = 0; center1 < Const.K; center1++) {
                 if (center1 != 0) {
@@ -181,13 +209,15 @@ public class KMean {
             for(int i = 0; i < Const.N; i++) {
                 if (upperBound[i] > minDistToCenter[data[i].label]) {
                     for(int center = 0; center < Const.K; center++) {
-                        if (data[i].label != center 
-                                && upperBound[i] > lowerBound[i][center] 
+                        if (data[i].label != center
+                                && upperBound[i] > lowerBound[i][center]
                                 && upperBound[i] > 0.5 * centerDist[data[i].label][center]) {
+                           
                             //valid point
                             double distance;
                             if (notUpdate[i]) {
                                 distance = data[i].getDistance(Centroid[data[i].label]);
+                                lowerBound[i][data[i].label] = distance;
                                 notUpdate[i] = false;
                             } else {
                                 distance = upperBound[i];
@@ -204,36 +234,11 @@ public class KMean {
                     }
                 }
             }
-            // update the centroid
-            for(int i = 0; i < Const.K; i++) {
-                nextCentroid[i].setZero();
-                noOfPoint[i] = 0;
-            }
-            for(int i = 0; i < Const.N; i++) {
-                nextCentroid[ data[i].label ].addPoint(data[i]);
-                noOfPoint[ data[i].label]++;
-            }
-            for(int i = 0; i < Const.K; i++) {
-                if (noOfPoint[i] > 0) {
-                    nextCentroid[i].divide(noOfPoint[i]);
-                }
-            }
-            for(int i = 0; i < Const.N; i++) {
-          //      for(int center = 0; center < Const.K; center++) {
-            //        lowerBound[i][center] = Math.max(0.0, lowerBound[i][center] - Centroid[center].getDistance(nextCentroid[center]));
-              //  }
-                
-                upperBound[i] = upperBound[i] + Centroid[data[i].label].getDistance(nextCentroid[data[i].label]);
-                notUpdate[i] = true;
-            }
-            //System.out.println();
-            for(int i = 0; i < Const.K; i++) {
-                Centroid[i].setData(nextCentroid[i]);
-            }
+            
             if (iter == 0) prevSSE = getSSEError();
             else {
                 double curSSE = getSSEError();
-                if (Math.abs(curSSE - prevSSE) < 0.5) break;
+                if (Math.abs(curSSE - prevSSE) < 10) break;
             }
         }
     }
@@ -243,7 +248,7 @@ public class KMean {
         minsseError = 1e16;
         for(int nrun = 0; nrun < Const.n_run; nrun++) {
             generateKInitialCentroids();
-            KMeanAlgorithmTriangleInequality();
+            kMeanAlgorithmTriangleInequality();
             //kMeanAlgorithm();
             
             dataOutput();
@@ -259,3 +264,10 @@ public class KMean {
 
 //213486.1211930929
 //181083.29652810885
+
+//
+//Min SSE Error = 132133.95650183153
+//BUILD SUCCESSFUL (total time: 42 seconds)
+
+//Min SSE Error = 132133.95650183153
+//BUILD SUCCESSFUL (total time: 42 seconds)
