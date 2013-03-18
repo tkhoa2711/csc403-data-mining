@@ -17,6 +17,7 @@ public class KMean {
      */
     public static Point[] data;
     public static Point[] Centroid;
+    public static double eps = 0;
     /*************************DATA I/O***************************/
     public static void dataInput() {
         try {
@@ -64,10 +65,10 @@ public class KMean {
         int[] Index = new int[Const.N];
         for(int i = 0; i < Const.N; i++) {
             Index[i] = i;
-        /*    int j = (int)(Math.random() * i);
+            int j = (int)(Math.random() * i);
             int tmp = Index[i];
             Index[i] = Index[j];
-            Index[j] = tmp;*/
+            Index[j] = tmp;
         }
         
         System.out.print("Select points as centroids: ");
@@ -78,6 +79,32 @@ public class KMean {
         }
         System.out.println();
     }
+    
+    public static void improvedKInitialCentroids() {
+        Centroid = new Point[Const.K];
+        
+        Point Origin = new Point(Const.D);
+        Origin.setZero();
+        
+        List<DataPoint> datapoints = new ArrayList<DataPoint>();
+        for(int i = 0; i < Const.N; i++) {
+            datapoints.add(new DataPoint(data[i].getDistance(Origin),i));
+        }
+        Collections.sort(datapoints);
+        int bandwidth = Const.N / Const.K;
+        if (Const.N % Const.K != 0) bandwidth++;
+        for(int i = 0; i < Const.K; i++) {
+            Centroid[i] = new Point(Const.D);
+            Centroid[i].setZero();
+            int cnt = 0;
+            for(int j = i * bandwidth; j < Math.min(Const.N,(i+1) * bandwidth); j++) {
+                Centroid[i].addPoint(data[datapoints.get(j).index]);
+                cnt++;
+            }
+            Centroid[i].divide(cnt);
+        }
+    }
+   
     /******************* DIFFERENT K-MEAN ALGORITHMS ************************/
     public static void kMeanAlgorithm() {
         Point[] nextCentroid = new Point[Const.K];
@@ -85,6 +112,7 @@ public class KMean {
         for(int i = 0; i < Const.K; i++) {
             nextCentroid[i] = new Point(Const.D);
         }
+        double prevSSE = 0;
         // iterate the K-mean process Const.max_it times
         for(int iter = 0; iter < Const.max_it; iter++) {
             for(int i = 0; i < Const.K; i++) {
@@ -113,6 +141,15 @@ public class KMean {
                     nextCentroid[i].divide(noOfPoint[i]);
                     Centroid[i].setData(nextCentroid[i]);
                 }
+            }
+            if (iter == 0) prevSSE = getSSEError();
+            else {
+                double curSSE = getSSEError();
+                if (Math.abs(curSSE - prevSSE) < eps) {
+                    System.out.println(iter + " iterations.");
+                    break;
+                }
+                prevSSE = curSSE;
             }
         }
     }
@@ -178,7 +215,7 @@ public class KMean {
                 notUpdate[i] = true;
             }
             if (iter == Const.max_it - 1) {
-                System.out.println("REACH ITER");
+                System.out.println(iter + " iterations.");
                 break;
             }
             //System.out.println();
@@ -217,7 +254,7 @@ public class KMean {
                             double distance;
                             if (notUpdate[i]) {
                                 distance = data[i].getDistance(Centroid[data[i].label]);
-                                lowerBound[i][data[i].label] = distance;
+            //                    lowerBound[i][data[i].label] = distance;
                                 notUpdate[i] = false;
                             } else {
                                 distance = upperBound[i];
@@ -238,7 +275,11 @@ public class KMean {
             if (iter == 0) prevSSE = getSSEError();
             else {
                 double curSSE = getSSEError();
-                if (Math.abs(curSSE - prevSSE) < 10) break;
+                if (Math.abs(curSSE - prevSSE) < eps) {
+                    System.out.println(iter + " iterations.");
+                    break;
+                }
+                prevSSE = curSSE;
             }
         }
     }
@@ -247,27 +288,36 @@ public class KMean {
         dataInput();
         minsseError = 1e16;
         for(int nrun = 0; nrun < Const.n_run; nrun++) {
-            generateKInitialCentroids();
+            //generateKInitialCentroids();
+            improvedKInitialCentroids();
             kMeanAlgorithmTriangleInequality();
             //kMeanAlgorithm();
-            
             dataOutput();
         }
         System.out.println("Min SSE Error = " + minsseError);
     }
 }
-
-//209556.5906846869
-/// 210649.70136530144
-//213567.15128687976
-//201659.38360211934
-
-//213486.1211930929
-//181083.29652810885
-
 //
-//Min SSE Error = 132133.95650183153
-//BUILD SUCCESSFUL (total time: 42 seconds)
-
-//Min SSE Error = 132133.95650183153
-//BUILD SUCCESSFUL (total time: 42 seconds)
+//Min SSE Error = 216650.96281054325
+//BUILD SUCCESSFUL (total time: 17 seconds)
+//
+//Min SSE Error = 221409.76651052854
+//BUILD SUCCESSFUL (total time: 12 seconds)
+//
+class DataPoint implements Comparable<DataPoint> {
+    public double distance;
+    public int index;
+    DataPoint() {
+        distance = 0;
+        index = 0;
+    }
+    DataPoint(double distance, int index) {
+        this.distance = distance;
+        this.index = index;
+    }
+    public int compareTo(DataPoint B) {
+        if (distance < B.distance || (distance == B.distance && index < B.index)) return -1;
+        else if (distance == B.distance && index == B.index) return 0;
+        else return 1;
+    }
+}
