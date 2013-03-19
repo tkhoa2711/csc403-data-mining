@@ -111,12 +111,15 @@ public class KNN {
 			
 			//get label of K nearest neighbor
 			double[] neighborLabel = new double[K];
+                        double[] neighborDistance = new double[K];
+                        
 			for(int j = 0; j<K;j++){
 				neighborLabel[j] = dataTrain[neighbor[j]].getLabel();
+                                neighborDistance[j] = distance[neighbor[j]];
 			}
 			
 			//assign predicted label to test point 
-			predictedLabel[i] = identifyLabel(neighborLabel);
+			predictedLabel[i] = identifyLabel(neighborLabel,neighborDistance);
 		}
 
 		long endTime = System.nanoTime();
@@ -165,28 +168,27 @@ public class KNN {
 		return res;
 	}
 	
-	public static double identifyLabel(double[] neighborLabel){
+	public static double identifyLabel(double[] neighborLabel,double[] neighborDistance){
 		double predictedLabel = -1;
 		Label[] labelList = new Label[C];
 		int countlabel = 0;
 		boolean addMem = false;
 		
-		for(int i = 0; i<labelList.length;i++){
+		for(int i = 0; i<neighborLabel.length;i++){
 			addMem = false;
 			for (int j=0; j<countlabel;j++){
 				if (neighborLabel[i] == labelList[j].getLabel()){
-					labelList[j].addMember();
+					labelList[j].addMember(1/(neighborDistance[j]*neighborDistance[j]));                                        
 					addMem = true;
 					break;
 				}
 			}
 			if (!addMem){
-				labelList[countlabel] = new Label(neighborLabel[i]); 
-				labelList[countlabel].addMember();
+				labelList[countlabel] = new Label(neighborLabel[i],1/(neighborDistance[i]*neighborDistance[i])); 
 				countlabel++;
 			}
 		}
-		int maxMemberCount = 0;
+		double maxMemberCount = 0;
 		int index = -1;
 		for(int i = 0; i < countlabel; i++){
 			if(labelList[i].getMembersCount()> maxMemberCount){
