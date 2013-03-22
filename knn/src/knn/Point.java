@@ -95,6 +95,7 @@ public class Point {
     public double getCosDistance(Point B) {
         double res = 0;
         res = this.getDotProduct(B)/(this.getAbs()*B.getAbs());
+        res = res*-1 + 2;
         return res;
     }
     
