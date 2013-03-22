@@ -14,7 +14,7 @@ public class ImprovedKMeanAlgorithm {
     public static boolean [] notUpdate;
     public static double [][] lowerBound;
     public static double [] upperBound;
-    public static double eps;
+    public static double eps = 0;
             
     public static void calculateCenterToCenterDistance(Point[] Centroid, Point[] data) {   //O(K^2*D)
         for(int center1 = 0; center1 < Const.K; center1++) {
