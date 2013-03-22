@@ -9,7 +9,7 @@ package kmean;
  * @author Vu
  */
 public class ClassicKMeanAlgorithm {
-    public static double eps = 1;
+    public static double eps = 0;
     
     public static Point[] clustering(Point[] Centroid, Point[] data) {
         System.out.println("CLUSTERING DATA...");

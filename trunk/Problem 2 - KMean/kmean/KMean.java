@@ -26,9 +26,8 @@ public class KMean {
         for(int nrun = 0; nrun < Const.n_run; nrun++) {
             //Centroid = ClassicCentroidInitialization.init(data);
             Centroid = ImprovedCentroidInitialization.init(data);
-            
             Centroid = ImprovedKMeanAlgorithm.clustering(Centroid, data);
-         //   Centroid = ClassicKMeanAlgorithm.clustering(Centroid, data);
+            //Centroid = ClassicKMeanAlgorithm.clustering(Centroid, data);
             dataOutput();
         }
         System.out.println("number of distance operation = " + Point.nOperation);
@@ -39,7 +38,7 @@ public class KMean {
     /*************************DATA I/O***************************/
     public static void dataInput() {
         try {
-            Scanner sc = new Scanner(new File("dna.txt"));
+            Scanner sc = new Scanner(new File("huge_test_data.txt"));
             Const.N = sc.nextInt(); Const.D = sc.nextInt(); Const.C = sc.nextInt();
             data = new Point[Const.N];
             System.out.println("nPoint = " + Const.N);
