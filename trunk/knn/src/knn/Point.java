@@ -78,7 +78,7 @@ public class Point {
     public double getL1Distance(Point B) {
         double res = 0;
         for(int i = 0; i < data.length; i++) {
-            res = res + (getValue(i) - B.getValue(i));
+            res = res + Math.abs(getValue(i) - B.getValue(i));
         }
         return res;
     }
