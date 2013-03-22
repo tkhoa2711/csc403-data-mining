@@ -55,10 +55,10 @@ public class KNN {
 		String testDataFile = "";
 		String predictionFile = "";
 		long startTime = System.nanoTime();
-		
+		System.out.println("asd");
 		// Parse command line options
 		try {
-			if (args.length < 3) {
+			if (args.length < 2) {
 				System.out.println("Insufficient command line options");				
 				return;
 			}
@@ -182,12 +182,14 @@ public class KNN {
 			for (int j=0; j<countlabel;j++){
 				if (neighborLabel[i] == labelList[j].getLabel()){
 					labelList[j].addMember(1/(neighborDistance[j]*neighborDistance[j]));                                        
+                                        //labelList[j].addMember(1);                                        
 					addMem = true;
 					break;
 				}
 			}
 			if (!addMem){
 				labelList[countlabel] = new Label(neighborLabel[i],1/(neighborDistance[i]*neighborDistance[i])); 
+                                //labelList[countlabel] = new Label(neighborLabel[i],1); 
 				countlabel++;
 			}
 		}
