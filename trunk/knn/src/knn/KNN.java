@@ -48,7 +48,7 @@ public class KNN {
 			return null;
 		} 
 	}
-
+        
 	public static void main(String[] args) {
 		
 		String trainDataFile = "";
@@ -98,10 +98,13 @@ public class KNN {
 				switch(METRIC){
 					case 0: 
 						distance[j]= dataTest[i].getCosDistance(dataTrain[j]);
+                                                break;
 					case 1: 
 						distance[j]= dataTest[i].getL1Distance(dataTrain[j]);
+                                                break;
 					case 2: 
-						distance[j]= dataTest[i].getEucliDistance(dataTrain[j]);                
+						distance[j]= dataTest[i].getEucliDistance(dataTrain[j]); 
+                                                break;
 				}
 			}
 			
