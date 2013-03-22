@@ -10,6 +10,8 @@ import java.math.*;
  * @author Vu
  */
 public class Point {
+    public static int nOperation = 0;
+    
     public double data[];
     public int label;
     
@@ -56,10 +58,11 @@ public class Point {
     }
     
     public double getDistance(Point B) {
+        nOperation++;
         double res = 0;
         for(int i = 0; i < data.length; i++) {
-            res = res + Math.sqrt((getValue(i) - B.getValue(i)) * (getValue(i) - B.getValue(i)));
+            res = res + (getValue(i) - B.getValue(i)) * (getValue(i) - B.getValue(i));
         }
-        return res;
+        return Math.sqrt(res);
     }
 }
