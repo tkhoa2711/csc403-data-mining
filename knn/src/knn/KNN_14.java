@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.Scanner;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 
 /**
@@ -82,7 +83,7 @@ public class KNN_14 {
         dataTrain = dataInput(trainDataFile);
         dataTest = dataInput(testDataFile);
 
-        
+
         // Get number of class labels
         List<Double> labelList = new ArrayList<Double>();
         for (int i = 0; i < dataTrain.length; i++) {
@@ -92,17 +93,34 @@ public class KNN_14 {
         }
         C = labelList.size();
 
+        double[] allLabel = new double[C];
+        for (int i = 0; i < C; i++) {
+            allLabel[i] = labelList.get(i);
+        }
+        Point[] sample = sampleData(dataTrain, allLabel);
+
         double[] weight = new double[C];
-        for(int i = 0 ; i < C ; i++){
+        for (int i = 0; i < C; i++) {
             weight[i] = 0;
         }
-        weight = findOptimumWeight(dataTrain, 0.5, K);
+        weight = findOptimumWeight(sample, 0.7, K, METRIC);
         double[] predictedLabel = new double[dataTest.length];
 
         for (int i = 0; i < dataTest.length; i++) {
             double[] distance = new double[dataTrain.length];
             for (int j = 0; j < dataTrain.length; j++) {
-                distance[j] = getWeightedCosDistance(dataTrain[j], dataTest[i], weight);
+
+                switch (METRIC) {
+                    case 0:
+                        distance[j] = getWeightedCosDistance(dataTrain[j], dataTest[i], weight);
+                        break;
+                    case 1:
+                        distance[j] = getWeightedL1Distance(dataTrain[j], dataTest[i], weight);
+                        break;
+                    case 2:
+                        distance[j] = getWeightedEuclideDistance(dataTrain[j], dataTest[i], weight);
+                        break;
+                }
 
             }
 
@@ -170,7 +188,7 @@ public class KNN_14 {
         }
         return res;
     }
-    
+
     public static int[] getMaxIndex(int k, double[] d) {
         int[] res = new int[k];
         boolean[] isMax = new boolean[d.length];
@@ -285,15 +303,66 @@ public class KNN_14 {
 
     }
 
-    public static boolean correctlyClassified(Point a, Point[] neighbours, double[] weight, double percentage) {
+    public static double getWeightedEuclideDistance(Point a, Point b, double[] weight) {
+        double[] temp = a.getData();
+        double[] temp1 = new double[a.getData().length];
+
+        for (int i = 0; i < temp.length; i++) {
+            temp1[i] = temp[i] * weight[i];
+        }
+        Point c = new Point(temp1);
+
+        double[] temp2 = b.getData();
+        double[] temp3 = new double[b.getData().length];
+
+        for (int i = 0; i < temp2.length; i++) {
+            temp3[i] = temp2[i] * weight[i];
+        }
+        Point d = new Point(temp3);
+        return 1/(c.getEucliDistance(d) * c.getEucliDistance(d));
+
+    }
+
+    public static double getWeightedL1Distance(Point a, Point b, double[] weight) {
+        double[] temp = a.getData();
+        double[] temp1 = new double[a.getData().length];
+
+        for (int i = 0; i < temp.length; i++) {
+            temp1[i] = temp[i] * weight[i];
+        }
+        Point c = new Point(temp1);
+
+        double[] temp2 = b.getData();
+        double[] temp3 = new double[b.getData().length];
+
+        for (int i = 0; i < temp2.length; i++) {
+            temp3[i] = temp2[i] * weight[i];
+        }
+        Point d = new Point(temp3);
+        return 1/(c.getL1Distance(d)*c.getL1Distance(d));
+
+    }
+
+    public static boolean correctlyClassified(Point a, Point[] neighbours, double[] weight, double percentage, int Metric) {
         double classSimilarity = 0;
         double otherSimilarity = 0;
         double label = a.getLabel();
         for (int i = 0; i < neighbours.length; i++) {
             if (neighbours[i].getLabel() == label) {
-                classSimilarity += getWeightedCosDistance(a, neighbours[i], weight);
+                if(Metric == 0)
+                    classSimilarity += getWeightedCosDistance(a, neighbours[i], weight);
+                else if(Metric == 1)
+                    classSimilarity += getWeightedL1Distance(a, neighbours[i], weight);
+                else
+                    classSimilarity += getWeightedEuclideDistance(a, neighbours[i], weight);
+                   
             } else {
-                otherSimilarity += getWeightedCosDistance(a, neighbours[i], weight);
+                if(Metric == 0)
+                    otherSimilarity += getWeightedCosDistance(a, neighbours[i], weight);
+                else if(Metric == 1)
+                    otherSimilarity += getWeightedL1Distance(a, neighbours[i], weight);
+                else
+                    otherSimilarity += getWeightedEuclideDistance(a, neighbours[i], weight);
             }
         }
         if (classSimilarity > percentage * (classSimilarity + otherSimilarity)) {
@@ -303,7 +372,7 @@ public class KNN_14 {
         }
     }
 
-    public static int objectiveFunction(Point[] allpoints, double[] weight, double percentage, int k) {
+    public static int objectiveFunction(Point[] allpoints, double[] weight, double percentage, int k, int Metric) {
         int n = allpoints.length;
         int correctCount = 0;
 
@@ -314,7 +383,12 @@ public class KNN_14 {
 
             //calculate all weighted cosine distance
             for (int j = 0; j < n && j != i; j++) {
-                distances[count] = getWeightedCosDistance(allpoints[i], allpoints[j], weight);
+                if(Metric == 0)
+                    distances[count] = getWeightedCosDistance(allpoints[i], allpoints[j], weight);
+                else if(Metric == 1)
+                    distances[count] = getWeightedL1Distance(allpoints[i], allpoints[j], weight);
+                else
+                    distances[count] = getWeightedEuclideDistance(allpoints[i], allpoints[j], weight);
                 count++;
             }
 
@@ -326,7 +400,7 @@ public class KNN_14 {
             }
 
             //check if allpoints[i] is correctly classified
-            if (correctlyClassified(allpoints[i], knearest, weight, percentage)) {
+            if (correctlyClassified(allpoints[i], knearest, weight, percentage, Metric)) {
                 correctCount++;
             }
 
@@ -334,7 +408,7 @@ public class KNN_14 {
         return correctCount;
     }
 
-    public static double[] findOptimumWeight(Point[] train, double percentage, int k) {
+    public static double[] findOptimumWeight(Point[] train, double percentage, int k, int Metric) {
         int attrNumber = train[0].getData().length;
         double[] tune = {0.2, 0.5, 0.8, 1.5, 2, 4};
         double[] weight = new double[attrNumber];
@@ -345,7 +419,7 @@ public class KNN_14 {
         }
 
         for (int i = 0; i < attrNumber; i++) {
-            int initObjective = objectiveFunction(train, weight, percentage, k);
+            int initObjective = objectiveFunction(train, weight, percentage, k, Metric);
 
             double initWeight = weight[i];
             double[] subObjective = new double[tune.length];
@@ -357,7 +431,7 @@ public class KNN_14 {
             //function for that value
             for (int j = 0; j < tune.length; j++) {
                 weight[i] = initWeight * tune[j];
-                subObjective[j] = objectiveFunction(train, weight, percentage, k);
+                subObjective[j] = objectiveFunction(train, weight, percentage, k, Metric);
             }
 
             //check if after tunning the objective value can be improved
@@ -376,24 +450,65 @@ public class KNN_14 {
         }
         return weight;
     }
-    /*public static void main(String[]args){
-     Point[] a = new Point[5];
-     double[] temp = {1,2};
-     a[0] = new Point(temp);
-     double[] temp1 = {1,1};
-     a[1] = new Point(temp1);
-     double[] temp2 = {2,2};
-     a[2] = new Point(temp2);
-     double[] temp3 = {5,6};
-     a[3] = new Point(temp3);
-     double[] temp4 = {7,8};
-     a[4] = new Point(temp4);
-     a[0].setLabel(1);
-     a[1].setLabel(1);
-     a[2].setLabel(1);
-     a[3].setLabel(2);
-     a[4].setLabel(2);
-     double[] weight = {1,1};
-     System.out.println(objectiveFunction(a,weight,0.5,2));
-     }*/
+
+    public static Point[] sampleData(Point[] train, double[] label) {
+        int l = label.length;
+        int t = train.length;
+        ArrayList<Point> sample = new ArrayList<Point>();
+        ArrayList[] data = new ArrayList[l];
+        int[] classCount = new int[l];
+        double samplingFactor = 0;
+        int max = 0;
+
+        for (int i = 0; i < l; i++) {
+            data[i] = new ArrayList<Point>();
+            classCount[i] = 0;
+        }
+
+        //classify all data into classes
+        for (int i = 0; i < t; i++) {
+            for (int j = 0; j < l; j++) {
+                if (train[i].getLabel() == label[j]) {
+                    data[j].add(train[i]);
+                    classCount[j]++;
+                }
+            }
+        }
+
+        //find the sampling factor:
+        for (int i = 0; i < l; i++) {
+            if (classCount[i] > max) {
+                max = classCount[i];
+            }
+        }
+
+        //if the class with the most members has only < 100 data point -> sample = 1
+        if (max > 100) {
+            samplingFactor = max / 100;
+        } else {
+            samplingFactor = 1;
+        }
+
+        //get the number of member from each class after sampling
+        for (int i = 0; i < l; i++) {
+            if (classCount[i] / samplingFactor == 0) {
+                continue;
+            } else {
+                classCount[i] = (int) ((double) classCount[i] / samplingFactor);
+            }
+        }
+
+        //sample the data
+        for (int i = 0; i < l; i++) {
+            for (int j = 0; j < classCount[i]; j++) {
+                sample.add((Point) data[i].get(j));
+            }
+        }
+
+        Point[] returnArray = new Point[sample.size()];
+        for (int i = 0; i < sample.size(); i++) {
+            returnArray[i] = sample.get(i);
+        }
+        return returnArray;
+    }
 }
