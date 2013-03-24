@@ -103,7 +103,6 @@ public class ImprovedKMeanAlgorithm {
      * The complexity is approximately O(n_iter * K * max(N,D)).
      */
     public static Point[] clustering(Point[] Centroid, Point[] data) {
-        System.out.println("CLUSTERING DATA...");
         upperBound = new double[Const.N];
         lowerBound = new double[Const.N][Const.K];
         centerDist = new double[Const.K][Const.K];
@@ -194,7 +193,6 @@ public class ImprovedKMeanAlgorithm {
             else {
                 double curSSE = getSSEError(Centroid, data);
                 if (Math.abs(curSSE - prevSSE) < eps) {
-                    System.out.println(iter + " iterations.");
                     break;
                 }
                 prevSSE = curSSE;

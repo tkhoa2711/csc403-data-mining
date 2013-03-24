@@ -20,7 +20,7 @@ public class KMean {
     public static Point[] minCentroid;
     public static double minsseError;
     public static double eps = 1;
-    
+    public static long estimatedTime;
     public static void main(String[] args) {
         dataInput();
         minsseError = 1e16;
@@ -40,21 +40,16 @@ public class KMean {
             updateSSE();
         }
         
-        long estimatedTime = System.nanoTime() - startTime;
-        System.out.println("Min SSE Error = " + minsseError);
-        System.out.println("Time elapsed = " + estimatedTime/1000000000.0 + " seconds.");
+        estimatedTime = System.nanoTime() - startTime;
+        dataOutput();
     }
     /*************************DATA I/O***************************/
     public static void dataInput() {
         try {
-            String FileName = "isolet.txt";
-            System.out.println("Running on " +FileName);
+            String FileName = "glass.txt";
             Scanner sc = new Scanner(new File(FileName));
             Const.N = sc.nextInt(); Const.D = sc.nextInt(); Const.C = sc.nextInt();
             data = new Point[Const.N];
-            System.out.println("nPoint = " + Const.N);
-            System.out.println("nDimension = " + Const.D);
-            System.out.println("nClass = " + Const.K);
             for(int i = 0; i < Const.N; i++) {
                 data[i] = new Point(Const.D);
                 data[i].label = 0;
@@ -71,7 +66,31 @@ public class KMean {
     }
     
     public static void dataOutput() {
+        System.out.println("Execution time =\t " + estimatedTime/1000000000.0 + " seconds.");
+        System.out.println("Within-cluster SSE =\t " + minsseError);
+        System.out.println("(Final Center Points:");
+        double[] WSS = new double[Const.K];
+        for(int i = 0; i < Const.K; i++) {
+            WSS[i] = 0;
+        }
+        for(int i = 0; i < Const.N; i++) {
+            WSS[data[i].label] += data[i].getDistance(minCentroid[data[i].label]) *
+                                  data[i].getDistance(minCentroid[data[i].label]);
+        }
+        for(int i = 0; i < Const.K; i++) {
+            System.out.print("\t" + i + "\t[ ");
+            for(int j = 0; j < Const.D; j++)
+                System.out.printf("%.3f ", minCentroid[i].getValue(j));
+            System.out.printf("]\tSSE = %.3f\n",WSS[i]);
+        }
+        System.out.println(")");
         
+        System.out.println("Point\tCenter\tSquared Dist");
+        System.out.println("----\t----\t-----------");
+        for(int i = 0; i < Const.N; i++) {
+            System.out.printf("%d\t%d\t%.3f\n",i,data[i].label,data[i].getDistance(minCentroid[data[i].label]) *
+                                                               data[i].getDistance(minCentroid[data[i].label]));
+        }
     }
     
     public static void updateSSE() {
