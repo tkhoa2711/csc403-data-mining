@@ -17,20 +17,29 @@ public class KMean {
      */
     public static Point[] data;
     public static Point[] Centroid;
+    public static Point[] minCentroid;
+    public static double minsseError;
     public static double eps = 1;
+    
     public static void main(String[] args) {
-        // TODO code application logic here
         dataInput();
         minsseError = 1e16;
-        long startTime = System.nanoTime();    
-        for(int nrun = 0; nrun < Const.n_run; nrun++) {
-            //Centroid = ClassicCentroidInitialization.init(data);
-            Centroid = ImprovedCentroidInitialization.init(data);
-            Centroid = ImprovedKMeanAlgorithm.clustering(Centroid, data);
-            //Centroid = ClassicKMeanAlgorithm.clustering(Centroid, data);
-            dataOutput();
+        minCentroid = new Point[Const.K];
+        for(int i = 0; i < Const.K; i++) {
+            minCentroid[i] = new Point(Const.D);
         }
-        System.out.println("number of distance operation = " + Point.nOperation);
+        long startTime = System.nanoTime();    
+        
+        for(int nrun = 0; nrun < Const.n_run; nrun++) { /* Run the algorithm n_run times */
+            if (nrun == 0) {
+                Centroid = ImprovedCentroidInitialization.init(data);
+            } else {
+                Centroid = ClassicCentroidInitialization.init(data);
+            }            
+            Centroid = ImprovedKMeanAlgorithm.clustering(Centroid, data);            
+            updateSSE();
+        }
+        
         long estimatedTime = System.nanoTime() - startTime;
         System.out.println("Min SSE Error = " + minsseError);
         System.out.println("Time elapsed = " + estimatedTime/1000000000.0 + " seconds.");
@@ -38,11 +47,14 @@ public class KMean {
     /*************************DATA I/O***************************/
     public static void dataInput() {
         try {
-            Scanner sc = new Scanner(new File("huge_test_data.txt"));
+            String FileName = "isolet.txt";
+            System.out.println("Running on " +FileName);
+            Scanner sc = new Scanner(new File(FileName));
             Const.N = sc.nextInt(); Const.D = sc.nextInt(); Const.C = sc.nextInt();
             data = new Point[Const.N];
             System.out.println("nPoint = " + Const.N);
             System.out.println("nDimension = " + Const.D);
+            System.out.println("nClass = " + Const.K);
             for(int i = 0; i < Const.N; i++) {
                 data[i] = new Point(Const.D);
                 data[i].label = 0;
@@ -59,11 +71,19 @@ public class KMean {
     }
     
     public static void dataOutput() {
+        
+    }
+    
+    public static void updateSSE() {
         double sseError = getSSEError();
-        minsseError = Math.min(minsseError, sseError);
+        if (minsseError < sseError) {
+            minsseError = sseError;
+            for(int i = 0; i < Const.K; i++) {
+                minCentroid[i].setData(Centroid[i]);
+            }
+        }
     }
 
-    public static double minsseError;
     public static double getSSEError() {
         double sseError = 0;
         for(int i = 0; i < Const.N; i++) {
@@ -74,3 +94,4 @@ public class KMean {
         return sseError;
     }   
 }
+

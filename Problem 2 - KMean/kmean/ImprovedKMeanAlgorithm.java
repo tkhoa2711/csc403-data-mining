@@ -14,15 +14,15 @@ public class ImprovedKMeanAlgorithm {
     public static boolean [] notUpdate;
     public static double [][] lowerBound;
     public static double [] upperBound;
-    public static double eps = 0;
-            
-    public static void calculateCenterToCenterDistance(Point[] Centroid, Point[] data) {   //O(K^2*D)
+    public static double eps = 1;
+    /*
+     * This function computes all distance between Centroids, and computes 
+     * the array minDistToCenter[x] = 0.5 * min(dist[x][x'])
+     * Complexity: O(K^2*D)
+     */
+    public static void calculateCenterToCenterDistance(Point[] Centroid, Point[] data) {   
         for(int center1 = 0; center1 < Const.K; center1++) {
-            if (center1 != 0) {
-                minDistToCenter[center1] = Centroid[center1].getDistance(Centroid[0]);
-            } else {
-                minDistToCenter[center1] = Centroid[center1].getDistance(Centroid[1]);
-            }
+            minDistToCenter[center1] = 1e16;
             for(int center2 = 0; center2 < Const.K; center2++) {       
                 centerDist[center1][center2] = Centroid[center1].getDistance(Centroid[center2]);
                 if (center1 != center2) {
@@ -35,43 +35,73 @@ public class ImprovedKMeanAlgorithm {
         }
     }
     
+    /*
+     * This method updates the centroids for the next iteration, as well as the
+     * upperBound and lowerBound for each data point and its centroid.
+     * Complexity: O(NK + KD)
+     */
     public static void updateCentroids(Point[] Centroid, Point[] data) {
         double[] temp = new double[Const.K];
         int[] noOfPoint = new int[Const.K];
         Point[] nextCentroid = new Point[Const.K];
-        // update the centroid
+        
+        /*
+         * nextCentroid[i] indicates the mean of the clusters i
+         */
         for(int i = 0; i < Const.K; i++) {
             nextCentroid[i] = new Point(Const.D);
         }
-        for(int i = 0; i < Const.K; i++) {                       //O(KD)
+        for(int i = 0; i < Const.K; i++) {
             nextCentroid[i].setZero();
             noOfPoint[i] = 0;
         }
-        for(int i = 0; i < Const.N; i++) {                          //O(ND)
+        for(int i = 0; i < Const.N; i++) {
             nextCentroid[ data[i].label ].addPoint(data[i]);
             noOfPoint[ data[i].label]++;
         }
-        for(int i = 0; i < Const.K; i++) {                          //O(KD)
+        for(int i = 0; i < Const.K; i++) {                          
             if (noOfPoint[i] > 0) {
                 nextCentroid[i].divide(noOfPoint[i]);
             }
         }
-        for(int center = 0; center < Const.K; center++) {           //O(KD)
+        /*
+         * the temp[c] = distance between current iteration's center
+         * and next iteration's center.
+         */
+        for(int center = 0; center < Const.K; center++) {           
             temp[center] = Centroid[center].getDistance(nextCentroid[center]);
         }
-        for(int i = 0; i < Const.N; i++) {                          //O(NK)
+        
+        /*
+         * Update the lowerbound and upperBound and reset the notUpdated array
+         * l(x,c) = l(x,c) - d(c, m(c))
+         * u(x) = u(x) + d(m(c(x)),c)
+         */
+        for(int i = 0; i < Const.N; i++) {                          
             for(int center = 0; center < Const.K; center++) {
                 lowerBound[i][center] = lowerBound[i][center] - temp[center];
             }
-
             upperBound[i] = upperBound[i] + temp[data[i].label];
             notUpdate[i] = true;
         }
-        //System.out.println();
-        for(int i = 0; i < Const.K; i++) {                          //O(KD)
+        
+        /*
+         * update the new centroids
+         */
+        for(int i = 0; i < Const.K; i++) {                          
             Centroid[i].setData(nextCentroid[i]);
         }
+        temp = null;
+        noOfPoint = null;
+        nextCentroid = null;
+        System.gc();
     }
+    /* 
+     * This method clusters the data points based on the K initial centroids
+     * using the triangle inequality approaches for K-mean algorithm
+     * 
+     * The complexity is approximately O(n_iter * K * max(N,D)).
+     */
     public static Point[] clustering(Point[] Centroid, Point[] data) {
         System.out.println("CLUSTERING DATA...");
         upperBound = new double[Const.N];
@@ -84,39 +114,59 @@ public class ImprovedKMeanAlgorithm {
         for(int i = 0; i < Const.N; i++) {
             notUpdate[i] = true;
         }
-        for(int i = 0; i < Const.N; i++) { //find the class label for Point i
+        /* 
+         * Assign each data point to its closest center
+         * Compute the upperBound and lowerBound for each point and center
+         */
+        for(int i = 0; i < Const.N; i++) {
            double minDistance = data[i].getDistance(Centroid[0]);
            lowerBound[i][0] = minDistance;
-           int curClassLabel = 0;
+           int closestLabel = 0;
            for(int j = 1; j < Const.K; j++) {
                double distance = data[i].getDistance(Centroid[j]);
                lowerBound[i][j] = distance;
                if (distance < minDistance) {
                    minDistance = distance;
-                   curClassLabel = j;
+                   closestLabel = j;
                } 
            }
-           //add point i to class label curClassLabel
-           data[i].label = curClassLabel;
+           /*
+            * add point i to class label closestLabel
+            */
+           data[i].label = closestLabel;
            upperBound[i] = minDistance;
        }
-       double prevSSE = 0; 
+        
+       double prevSSE = 0;  // previous SSE to check the convergence
        
        for(int iter = 0; iter < Const.max_it; iter++) {
             calculateCenterToCenterDistance(Centroid, data);
-            //step 3
+
             for(int i = 0; i < Const.N; i++) {
-                double key = minDistToCenter[data[i].label];
-                if (upperBound[i] > key) {
+                /* We eliminate all points x where upperBound[x] <= minDistToCenter[x] */
+                if (upperBound[i] > minDistToCenter[data[i].label]) {
                     for(int center = 0; center < Const.K; center++) {
+                        /* 
+                         * We only consider center c where 
+                         * c != c(x), 
+                         * upperBound(x) > lowerBound(x,c) and
+                         * upperBound(x) > 1/2 * d(c(x),c)
+                         */
                         if (data[i].label != center
                                 && upperBound[i] > lowerBound[i][center]
                                 && upperBound[i] > 0.5 * centerDist[data[i].label][center]) {
                            
-                            //valid point
                             double distance;
-                            if (notUpdate[i]) {
-                                distance = data[i].getDistance(Centroid[data[i].label]);  //O(ND)
+                            if (notUpdate[i]) { /* if this point has not been updated */
+                                /* compute the real distance */
+                                distance = data[i].getDistance(Centroid[data[i].label]);  
+                                
+                                /* 
+                                 * Everytime d(x,c) is computed, we need to 
+                                 * update the lowerBound.
+                                 * The upperBound is updated whenever d(x,c(x)) 
+                                 * is computed or c(x) changes.
+                                 */
                                 lowerBound[i][data[i].label] = distance;
                                 upperBound[i] = distance;
                                 notUpdate[i] = false;
@@ -125,8 +175,11 @@ public class ImprovedKMeanAlgorithm {
                             }
                             if (distance > lowerBound[i][center] ||
                                 distance > 0.5 * centerDist[data[i].label][center]) {
+                                /* compute the real distance */
                                 double new_distance = data[i].getDistance(Centroid[center]);
                                 lowerBound[i][center] = new_distance;
+                                
+                                /* Update the class label and the upperBound */
                                 if (new_distance < distance) {
                                     data[i].label = center;
                                     upperBound[i] = new_distance;
@@ -147,6 +200,12 @@ public class ImprovedKMeanAlgorithm {
                 prevSSE = curSSE;
             }
         }
+       centerDist = null;
+       minDistToCenter = null;
+       notUpdate = null;
+       lowerBound = null;
+       upperBound = null;
+       System.gc();
        return Centroid;
     }
     public static double getSSEError(Point[] Centroid, Point[] data) {
