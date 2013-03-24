@@ -9,7 +9,7 @@ package kmean;
  * @author Vu
  */
 public class Const {
-    public static int K = 30; /* Number of clusters */ 
+    public static int K = 10; /* Number of clusters */ 
     public static int N; /* Number of data points */
     public static int D; /* Number of dimensions */
     public static int C; /* Number to indicate class label available */

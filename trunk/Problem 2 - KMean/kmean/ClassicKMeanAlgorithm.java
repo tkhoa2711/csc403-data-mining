@@ -17,7 +17,6 @@ public class ClassicKMeanAlgorithm {
      * The complexity is approximately O(n_iter * K * N * D).
      */
     public static Point[] clustering(Point[] Centroid, Point[] data) {
-        System.out.println("CLUSTERING DATA...");
         
         Point[] nextCentroid = new Point[Const.K];
         int[] noOfPoint = new int[Const.K];
@@ -64,7 +63,6 @@ public class ClassicKMeanAlgorithm {
             else {
                 double curSSE = getSSEError(Centroid, data);
                 if (Math.abs(curSSE - prevSSE) < eps) {
-                    System.out.println(iter + " iterations.");
                     break;
                 }
                 prevSSE = curSSE;
