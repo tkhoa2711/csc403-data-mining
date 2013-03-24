@@ -199,7 +199,9 @@ public class ImprovedKMeanAlgorithm {
                 }
                 prevSSE = curSSE;
             }
-        }
+       }
+       
+       /* Free memory using the garbage collector */
        centerDist = null;
        minDistToCenter = null;
        notUpdate = null;
