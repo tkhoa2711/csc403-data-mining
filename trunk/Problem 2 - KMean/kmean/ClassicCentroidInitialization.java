@@ -9,6 +9,7 @@ package kmean;
  * @author Vu
  */
 public class ClassicCentroidInitialization {
+    
     public static Point[] init(Point[] data) {
         Point[] Centroid = new Point[Const.K];       
         //shuffle the sequence to select randomly K points as Centroid

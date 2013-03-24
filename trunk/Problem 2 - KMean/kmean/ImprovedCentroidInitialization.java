@@ -13,28 +13,47 @@ import java.util.List;
  * @author Vu
  */
 public class ImprovedCentroidInitialization {
-     public static Point[] init(Point[] data) {
+    
+    public static Point[] init(Point[] data) {
         Point[] Centroid = new Point[Const.K];
+        double minValue = 1e16;
         
+        /* find the minimum coordinate of all data points */
+        for(int i = 0; i < Const.N; i++)
+            for(int j = 0; j < Const.D; j++) {
+                if (minValue > data[i].getValue(j)) {
+                    minValue = data[i].getValue(j);
+                }
+            }
+        /* move all data so that they have positive coordinates */
+        for(int i = 0; i < Const.N; i++) {
+            for(int j = 0; j < Const.D; j++) {
+                data[i].setValue(j, data[i].getValue(j) - minValue + 1);
+            }
+        }
         Point Origin = new Point(Const.D);
         Origin.setZero();
         
+        /* calculate the distance to the origin from each data point */
         List<DataPoint> datapoints = new ArrayList<DataPoint>();
         for(int i = 0; i < Const.N; i++) {
             datapoints.add(new DataPoint(data[i].getDistance(Origin),i));
         }
+        
+        /* recover original data */
+        for(int i = 0; i < Const.N; i++) {
+            for(int j = 0; j < Const.D; j++) {
+                data[i].setValue(j, data[i].getValue(j) + minValue - 1);
+            }
+        }
+        /* sort the points and choose the K-initial centroids */
         Collections.sort(datapoints);
         int bandwidth = Const.N / Const.K;
         if (Const.N % Const.K != 0) bandwidth++;
         for(int i = 0; i < Const.K; i++) {
             Centroid[i] = new Point(Const.D);
-            Centroid[i].setZero();
-            int cnt = 0;
-            for(int j = i * bandwidth; j < Math.min(Const.N,(i+1) * bandwidth); j++) {
-                Centroid[i].addPoint(data[datapoints.get(j).index]);
-                cnt++;
-            }
-            Centroid[i].divide(cnt);
+            int cnt = Math.min(Const.N,(i+1)*bandwidth) - i*bandwidth;
+            Centroid[i].setData(data[datapoints.get(i*bandwidth+cnt/2-1).index]);
         }
         return Centroid;
     }
