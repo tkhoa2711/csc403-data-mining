@@ -25,6 +25,32 @@ public class KMean {
     public static String InputFile = "glass.txt";
     public static String OutputFile = "KMean_output.txt";
     public static void main(String[] args) {
+		// Parse command line options
+		try {
+			if (args.length < 2) {
+				System.out.println("Insufficient command line options");				
+				return;
+			}
+
+			trainDataFile = args[0];
+			testDataFile = args[1];
+			for (int i = 2; i < args.length; i++) {
+				if (args[i].equals("-k")) {
+					Const.K = Integer.parseInt(args[i+1]);
+					i++;
+				} else if (args[i].equals("-m")) {
+					Const.max_it = Integer.parseInt(args[i+1]);
+					i++;
+				} else if (args[i].equals("-r")) {
+					Const.n_run = Integer.parseInt(args[i+1]);
+					i++;
+				}
+			}
+		} catch (Exception e) {
+			System.out.println("Error parsing command line options");
+			return;
+		}
+		
         dataInput();
         minsseError = 1e16;
         minCentroid = new Point[Const.K];
