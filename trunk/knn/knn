@@ -1,0 +1,46 @@
+if [[ "$OSTYPE" == "[\win32|msys\]" ]]; then	
+	echo "Please use Linux or cygwin/mingw on Windows"
+	exit
+fi
+
+if [[ "$#" -lt 2 ]]; then
+	echo -e "Insufficient command line arguments!"
+	exit
+fi
+
+training_set_file=$1
+test_set_file=$2
+k=1
+d=2
+
+while getopts k:d: opt; do
+	case $opt in
+		k)
+			k=$OPTARG
+			;;
+		d)
+			d=$OPTARG
+			;;
+		\?)
+			echo "Invalid option: -$OPTARG"
+			;;
+	esac
+done
+
+echo "training_set_file=$training_set_file"
+echo "test_set_file    =$test_set_file"
+echo "k=$k"
+echo "d=$d"
+
+# Compile java source file
+# javac -d classes/ src/knn/*.java
+javac src/knn/*.java
+
+# Build jar file from class files
+# jar -cvfm knn.jar Manifest.txt classes/knn/*.class
+# jar -cvfe knn.jar knn.KNN classes/knn/*.class
+
+# Run program
+# java -jar knn.jar $training_set_file $test_set_file -k $k -d $d
+# java -cp src/ knn.KNN ../dataset/classification/iris_train.txt ../dataset/classification/iris_test.txt -k $k -d $d
+java -cp src/ knn.KNN $training_set_file $test_set_file -k $k -d $d
