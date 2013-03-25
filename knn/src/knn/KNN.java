@@ -97,7 +97,7 @@ public class KNN {
 			for (int j = 0; j<dataTrain.length;j++){
 				switch(METRIC){
 					case 0: 
-						distance[j]= dataTest[i].getCosDistance(dataTrain[j]);
+						distance[j]= dataTest[i].getCosDistance1(dataTrain[j]);
                                                 break;
 					case 1: 
 						distance[j]= dataTest[i].getL1Distance(dataTrain[j]);
