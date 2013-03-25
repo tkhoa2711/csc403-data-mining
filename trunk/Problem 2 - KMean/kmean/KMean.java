@@ -21,6 +21,9 @@ public class KMean {
     public static double minsseError;
     public static double eps = 1;
     public static long estimatedTime;
+    
+    public static String InputFile = "glass.txt";
+    public static String OutputFile = "KMean_output.txt";
     public static void main(String[] args) {
         dataInput();
         minsseError = 1e16;
@@ -46,8 +49,7 @@ public class KMean {
     /*************************DATA I/O***************************/
     public static void dataInput() {
         try {
-            String FileName = "glass.txt";
-            Scanner sc = new Scanner(new File(FileName));
+            Scanner sc = new Scanner(new File(InputFile));
             Const.N = sc.nextInt(); Const.D = sc.nextInt(); Const.C = sc.nextInt();
             data = new Point[Const.N];
             for(int i = 0; i < Const.N; i++) {
@@ -65,31 +67,37 @@ public class KMean {
         }
     }
     
-    public static void dataOutput() {
-        System.out.println("Execution time =\t " + estimatedTime/1000000000.0 + " seconds.");
-        System.out.println("Within-cluster SSE =\t " + minsseError);
-        System.out.println("(Final Center Points:");
-        double[] WSS = new double[Const.K];
-        for(int i = 0; i < Const.K; i++) {
-            WSS[i] = 0;
-        }
-        for(int i = 0; i < Const.N; i++) {
-            WSS[data[i].label] += data[i].getDistance(minCentroid[data[i].label]) *
-                                  data[i].getDistance(minCentroid[data[i].label]);
-        }
-        for(int i = 0; i < Const.K; i++) {
-            System.out.print("\t" + i + "\t[ ");
-            for(int j = 0; j < Const.D; j++)
-                System.out.printf("%.3f ", minCentroid[i].getValue(j));
-            System.out.printf("]\tSSE = %.3f\n",WSS[i]);
-        }
-        System.out.println(")");
-        
-        System.out.println("Point\tCenter\tSquared Dist");
-        System.out.println("----\t----\t-----------");
-        for(int i = 0; i < Const.N; i++) {
-            System.out.printf("%d\t%d\t%.3f\n",i,data[i].label,data[i].getDistance(minCentroid[data[i].label]) *
-                                                               data[i].getDistance(minCentroid[data[i].label]));
+    public static void dataOutput() { 
+        try {
+            PrintWriter pw = new PrintWriter(new File(OutputFile));
+            System.out.println("Execution time =\t " + estimatedTime/1000000000.0 + " seconds.");
+            pw.println("Within-cluster SSE =\t " + minsseError);
+            pw.println("(Final Center Points:");
+            double[] WSS = new double[Const.K];
+            for(int i = 0; i < Const.K; i++) {
+                WSS[i] = 0;
+            }
+            for(int i = 0; i < Const.N; i++) {
+                WSS[data[i].label] += data[i].getDistance(minCentroid[data[i].label]) *
+                                      data[i].getDistance(minCentroid[data[i].label]);
+            }
+            for(int i = 0; i < Const.K; i++) {
+                pw.print("\t" + i + "\t[ ");
+                for(int j = 0; j < Const.D; j++)
+                    pw.printf("%.3f ", minCentroid[i].getValue(j));
+                pw.printf("]\tSSE = %.3f\n",WSS[i]);
+            }
+            pw.println(")");
+
+            pw.println("Point\tCenter\tSquared Dist");
+            pw.println("----\t----\t-----------");
+            for(int i = 0; i < Const.N; i++) {
+                pw.printf("%d\t%d\t%.3f\n",i,data[i].label,data[i].getDistance(minCentroid[data[i].label]) *
+                                                                   data[i].getDistance(minCentroid[data[i].label]));
+            }
+            pw.close();
+        } catch (IOException e) {
+            System.out.println("IO Exception");
         }
     }
     
