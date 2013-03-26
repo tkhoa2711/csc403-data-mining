@@ -32,8 +32,8 @@ public class KMean {
 				return;
 			}
 
-			trainDataFile = args[0];
-			testDataFile = args[1];
+			InputFile = args[0];
+			OutputFile = args[1];
 			for (int i = 2; i < args.length; i++) {
 				if (args[i].equals("-k")) {
 					Const.K = Integer.parseInt(args[i+1]);
