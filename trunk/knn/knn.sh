@@ -1,8 +1,3 @@
-if [[ "$OSTYPE" == "[\win32|msys\]" ]]; then	
-	echo "Please use Linux or cygwin/mingw on Windows"
-	exit
-fi
-
 if [[ "$#" -lt 2 ]]; then
 	echo -e "Insufficient command line arguments!"
 	exit
@@ -17,6 +12,7 @@ if [[ "$3" == "-k" ]]; then
 	k=$4
 elif [[ "$3" == "-d" ]]; then
 	d=$4
+fi
 
 if [[ "$5" == "-d" ]]; then
 	d=$6
