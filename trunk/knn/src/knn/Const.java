@@ -9,7 +9,7 @@ package knn;
  * @author Trang
  */
 class Const {
-    public static int K = 1;
+    public static int K = 30;
     public static int METRIC = 2;
     public static int N;
     public static int D;
