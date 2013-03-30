@@ -94,15 +94,20 @@ public class KNN {
 
         for (int i = 0; i<dataTest.length;i++){  
             double[] distance = new double[dataTrain.length];
+            
+            /* Compute the distance to all data points in the training set */
             for (int j = 0; j<dataTrain.length;j++){
                 switch(METRIC){
                     case 0: 
+                        /*      METRIC TYPE = 0: COSINE SIMILARITY      */
                         distance[j]= dataTest[i].getCosDistance1(dataTrain[j]);
                         break;
                     case 1: 
+                        /*      METRIC TYPE = 1: L1 DISTANCE            */
                         distance[j]= dataTest[i].getL1Distance(dataTrain[j]);
                         break;
                     case 2: 
+                        /*      METRIC TYPE = 2: L2 DISTANCE            */
                         distance[j]= dataTest[i].getEucliDistance(dataTrain[j]); 
                         break;
                 }
@@ -112,7 +117,7 @@ public class KNN {
             int[] neighbor = new int[K];
             neighbor = getMinIndex(K,distance);
 
-            //get label of K nearest neighbor
+            //get class label of K nearest neighbor
             double[] neighborLabel = new double[K];
             double[] neighborDistance = new double[K];
 
