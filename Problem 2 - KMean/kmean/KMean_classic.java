@@ -22,7 +22,7 @@ public class KMean_classic {
     public static double eps = 1;
     public static long estimatedTime;
     
-    public static String InputFile = "glass.txt";
+    public static String InputFile = "dna.txt";
     public static String OutputFile = "KMean_output.txt";
     public static void main(String[] args) {
         // Parse command line options
@@ -61,7 +61,7 @@ public class KMean_classic {
         
         for(int nrun = 0; nrun < Const.n_run; nrun++) { /* Run the algorithm n_run times */
             Centroid = ClassicCentroidInitialization.init(data);
-            Centroid = ClassicKMeanAlgorithm.clustering(Centroid, data);            
+            Centroid = ClassicKMeanAlgorithm.clustering(Centroid, data);
             updateSSE();
         }
         estimatedTime = System.nanoTime() - startTime;
