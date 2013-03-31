@@ -26,7 +26,9 @@ public class KNN {
     public static Point[] dataTrain;
     public static Point[] dataTest;
     public static Point[] Centroid;
-    
+    /*
+     * reading data inputs from file
+     */
     public static Point[] dataInput(String file) {
         try {
             Scanner sc = new Scanner(new File(file));
@@ -51,8 +53,27 @@ public class KNN {
             System.exit(0);
             return null;
         } 
+    } 
+    /* Write the data output to files using given format */
+    public static void dataOutput(String fileName, Point[] dataTest, double[] predictedLabel){
+        try {
+            BufferedWriter out = new BufferedWriter(new FileWriter(fileName));
+            for (int i = 0; i < dataTest.length; i++) {
+                double[] data = dataTest[i].getData();
+                for (int j = 0; j < D; j++) {
+                    out.write(data[j] + " ");
+                }
+                out.write(predictedLabel[i] + "");
+                out.newLine();
+            }
+            out.close();
+        } catch (IOException e) {
+            System.out.println("Error write result to file");
+        }
     }
-
+    /* 
+     * Main program
+     */
     public static void main(String[] args) {
 
         String trainDataFile = "";
@@ -126,7 +147,7 @@ public class KNN {
 
             //get index of K nearesr neighbor 
             int[] neighbor = new int[K];
-            neighbor = getMinIndex(K,distance);
+            neighbor = getKNearestNeighbors(K,distance);
 
             //get class label of K nearest neighbor
             double[] neighborLabel = new double[K];
@@ -145,7 +166,7 @@ public class KNN {
         long duration = endTime - startTime;
 
         //compute accuracy of the predicted label
-        double accuracy = computeAcc(dataTest,predictedLabel);
+        double accuracy = computeAccuracy(dataTest,predictedLabel);
 
         /* Print to output file */
         predictionFile = testDataFile.concat("_prediction.txt");
@@ -155,8 +176,10 @@ public class KNN {
         System.out.println("Accuracy = " + (accuracy*100) + "%");;
         System.out.println("Timecost = " + ((double)duration/1000000000) + "seconds");
     }
-
-    public static int[] getMinIndex(int k, double[] d){
+    /* 
+     * Get K nearest neighbors given the number K and the distance array
+     */
+    public static int[] getKNearestNeighbors(int k, double[] d){
         int[] res = new int[k];
         boolean[] isMin = new boolean[d.length];
         double min=-1;
@@ -188,7 +211,10 @@ public class KNN {
         }
         return res;
     }
-
+    /* 
+     * Determine the class label of the test data point from its K 
+     * nearest neighbors
+     */
     public static double identifyLabel(double[] neighborLabel,double[] neighborDistance){
         double predictedLabel = -1;
         Label[] labelList = new Label[C];
@@ -227,12 +253,11 @@ public class KNN {
         predictedLabel = labelList[index].getLabel();
         return predictedLabel;
     }
-
     /* 
      * Compute the accuracy of a given prediction, the accuracy is computed 
      * as n_correct_Answer/n_total_answer
      */
-    public static double computeAcc(Point[] trueLabel, double[] predictedLabel){
+    public static double computeAccuracy(Point[] trueLabel, double[] predictedLabel){
         double acc = 0;
         int truecount=0;
         for(int i=0; i < trueLabel.length;i++){
@@ -242,23 +267,5 @@ public class KNN {
         acc = (double)truecount/trueLabel.length;
         return acc;
 
-    }
-
-    /* Write the data output to files using given format */
-    public static void dataOutput(String fileName, Point[] dataTest, double[] predictedLabel){
-        try {
-            BufferedWriter out = new BufferedWriter(new FileWriter(fileName));
-            for (int i = 0; i < dataTest.length; i++) {
-                double[] data = dataTest[i].getData();
-                for (int j = 0; j < D; j++) {
-                    out.write(data[j] + " ");
-                }
-                out.write(predictedLabel[i] + "");
-                out.newLine();
-            }
-            out.close();
-        } catch (IOException e) {
-            System.out.println("Error write result to file");
-        }
     }
 }
