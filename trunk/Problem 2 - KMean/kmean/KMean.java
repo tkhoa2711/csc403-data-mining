@@ -22,7 +22,7 @@ public class KMean {
     public static double eps = 1;
     public static long estimatedTime;
     
-    public static String InputFile = "glass.txt";
+    public static String InputFile = "dna.txt";
     public static String OutputFile = "KMean_output.txt";
     public static void main(String[] args) {
         // Parse command line options
@@ -57,18 +57,18 @@ public class KMean {
         for(int i = 0; i < Const.K; i++) {
             minCentroid[i] = new Point(Const.D);
         }
+        ImprovedKMeanAlgorithm.init();
         long startTime = System.nanoTime();    
         
         for(int nrun = 0; nrun < Const.n_run; nrun++) { /* Run the algorithm n_run times */
-            if (nrun == 0) {
+            if (nrun == 1) {
                 Centroid = ImprovedCentroidInitialization.init(data);
             } else {
                 Centroid = ClassicCentroidInitialization.init(data);
-            }            
-            Centroid = ImprovedKMeanAlgorithm.clustering(Centroid, data);            
+            }
+            Centroid = ImprovedKMeanAlgorithm.clustering(Centroid, data);
             updateSSE();
         }
-        
         estimatedTime = System.nanoTime() - startTime;
         dataOutput();
     }

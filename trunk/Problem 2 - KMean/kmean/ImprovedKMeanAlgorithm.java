@@ -15,6 +15,24 @@ public class ImprovedKMeanAlgorithm {
     public static double [][] lowerBound;
     public static double [] upperBound;
     public static double eps = 1;
+    public static double [] temp;
+    public static int[] noOfPoint;
+    public static Point[] nextCentroid;
+    
+    public static void init() {
+        temp = new double[Const.K];
+        noOfPoint = new int[Const.K];
+        upperBound = new double[Const.N];
+        lowerBound = new double[Const.N][Const.K];
+        centerDist = new double[Const.K][Const.K];
+        minDistToCenter = new double[Const.K];
+        notUpdate = new boolean[Const.N];
+        
+        nextCentroid = new Point[Const.K];
+        for(int i = 0; i < Const.K; i++) {
+            nextCentroid[i] = new Point(Const.D);
+        }
+    }
     /*
      * This function computes all distance between Centroids, and computes 
      * the array minDistToCenter[x] = 0.5 * min(dist[x][x'])
@@ -41,16 +59,9 @@ public class ImprovedKMeanAlgorithm {
      * Complexity: O(NK + KD)
      */
     public static void updateCentroids(Point[] Centroid, Point[] data) {
-        double[] temp = new double[Const.K];
-        int[] noOfPoint = new int[Const.K];
-        Point[] nextCentroid = new Point[Const.K];
-        
         /*
          * nextCentroid[i] indicates the mean of the clusters i
          */
-        for(int i = 0; i < Const.K; i++) {
-            nextCentroid[i] = new Point(Const.D);
-        }
         for(int i = 0; i < Const.K; i++) {
             nextCentroid[i].setZero();
             noOfPoint[i] = 0;
@@ -91,10 +102,6 @@ public class ImprovedKMeanAlgorithm {
         for(int i = 0; i < Const.K; i++) {                          
             Centroid[i].setData(nextCentroid[i]);
         }
-        temp = null;
-        noOfPoint = null;
-        nextCentroid = null;
-        System.gc();
     }
     /* 
      * This method clusters the data points based on the K initial centroids
@@ -103,11 +110,6 @@ public class ImprovedKMeanAlgorithm {
      * The complexity is approximately O(n_iter * K * max(N,D)).
      */
     public static Point[] clustering(Point[] Centroid, Point[] data) {
-        upperBound = new double[Const.N];
-        lowerBound = new double[Const.N][Const.K];
-        centerDist = new double[Const.K][Const.K];
-        minDistToCenter = new double[Const.K];
-        notUpdate = new boolean[Const.N];
         
         //initilize
         for(int i = 0; i < Const.N; i++) {
@@ -198,14 +200,6 @@ public class ImprovedKMeanAlgorithm {
                 prevSSE = curSSE;
             }
        }
-       
-       /* Free memory using the garbage collector */
-       centerDist = null;
-       minDistToCenter = null;
-       notUpdate = null;
-       lowerBound = null;
-       upperBound = null;
-       System.gc();
        return Centroid;
     }
     public static double getSSEError(Point[] Centroid, Point[] data) {

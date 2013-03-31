@@ -10,7 +10,6 @@ import java.math.*;
  * @author Vu
  */
 public class Point {
-    
     public double data[];
     public int label;
     
@@ -62,7 +61,7 @@ public class Point {
     }
     
     /* Get the euclidean distance to point B */
-    public double getDistance(Point B) {;
+    public double getDistance(Point B) {
         double res = 0;
         for(int i = 0; i < data.length; i++) {
             res = res + (getValue(i) - B.getValue(i)) * (getValue(i) - B.getValue(i));
