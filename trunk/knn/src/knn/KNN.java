@@ -30,15 +30,19 @@ public class KNN {
     public static Point[] dataInput(String file) {
         try {
             Scanner sc = new Scanner(new File(file));
+            
             N = sc.nextInt();
             D = sc.nextInt();
             C = sc.nextInt();
             Point[] data = new Point[N];
+            
+            /* Read N data points of D dimensions */
             for(int i = 0; i < N; i++) {
                 data[i] = new Point(D);
                 for(int j = 0; j < D; j++) {
                     data[i].setValue(j, sc.nextDouble());
                 }
+                /* get the class label of the data point */
                 data[i].setLabel(sc.nextDouble());
             }
             return data;
@@ -55,7 +59,6 @@ public class KNN {
         String testDataFile = "";
         String predictionFile = "";
         long startTime = System.nanoTime();
-        System.out.println("asd");
         // Parse command line options
         try {
             if (args.length < 2) {
@@ -66,9 +69,14 @@ public class KNN {
             trainDataFile = args[0];
             testDataFile = args[1];
             for (int i = 2; i < args.length; i++) {
+                /*  If K is not avaiable, the default value is 1 */     
                 if (args[i].equals("-k")) {
                     K = Integer.parseInt(args[i+1]);
                     i++;
+                /*  
+                 * if Metric is not avaialbe, the default value is 2 which
+                 * is Euclidean distance
+                 */
                 } else if (args[i].equals("-d")) {
                     METRIC = Integer.parseInt(args[i+1]);
                     i++;
@@ -79,10 +87,13 @@ public class KNN {
             return;
         }
 
+        /* Read training data set */
         dataTrain = dataInput(trainDataFile);
+        
+        /* Read test data set */
         dataTest = dataInput(testDataFile);
 
-        // Get number of class labels
+        /* Get number of class labels */
         List<Double> labelList = new ArrayList<Double>();		
         for (int i = 0; i < dataTrain.length; i++) {
             if (!labelList.contains(Double.valueOf(dataTrain[i].getLabel())))
@@ -136,10 +147,11 @@ public class KNN {
         //compute accuracy of the predicted label
         double accuracy = computeAcc(dataTest,predictedLabel);
 
-        //print output file
+        /* Print to output file */
         predictionFile = testDataFile.concat("_prediction.txt");
         dataOutput(predictionFile, dataTest, predictedLabel);
-
+        
+        /* Print out the accuracy and the execution time */
         System.out.println("Accuracy = " + (accuracy*100) + "%");;
         System.out.println("Timecost = " + ((double)duration/1000000000) + "seconds");
     }
@@ -152,11 +164,13 @@ public class KNN {
         for (int j=0;j<d.length;j++){
             isMin[j]=false;
         }
-
+        /* 
+         * We run the following algorithm K times:
+         * Each time we find the nearest point which has not been 
+         * chosen before as the next neighbors
+         */
         for (int i = 0; i<k;i++){
-
             boolean assignMin = false;
-
             for (int j=0;j<d.length;j++){        
 
                 if (isMin[j]==false && assignMin==false) {
@@ -170,7 +184,6 @@ public class KNN {
                     res[i]=j;
                 }
             }
-
             isMin[res[i]]=true;
         }
         return res;
@@ -182,27 +195,32 @@ public class KNN {
         int countlabel = 0;
         boolean addMem = false;
 
+        /*
+         * Perform voting from neighbors, each time we increase the value
+         * of class(x) by an amount of 1/d(x)^2
+         */
         for(int i = 0; i<neighborLabel.length;i++){
             addMem = false;
             for (int j=0; j<countlabel;j++){
                 if (neighborLabel[i] == labelList[j].getLabel()){
                     labelList[j].addMember(1/(neighborDistance[j]*neighborDistance[j]));                    
-                    //labelList[j].addMember(1);                    
                     addMem = true;
                     break;
                 }
             }
             if (!addMem){
                 labelList[countlabel] = new Label(neighborLabel[i],1/(neighborDistance[i]*neighborDistance[i])); 
-                //labelList[countlabel] = new Label(neighborLabel[i],1); 
                 countlabel++;
             }
         }
-        double maxMemberCount = 0;
+        /*
+         * The class with highest weight is assigned to our test data point
+         */
+        double maxWeight = 0;
         int index = -1;
         for(int i = 0; i < countlabel; i++){
-            if(labelList[i].getMembersCount()> maxMemberCount){
-                maxMemberCount = labelList[i].getMembersCount();
+            if(labelList[i].getWeight()> maxWeight){
+                maxWeight = labelList[i].getWeight();
                 index = i;
             }
         }
@@ -210,6 +228,10 @@ public class KNN {
         return predictedLabel;
     }
 
+    /* 
+     * Compute the accuracy of a given prediction, the accuracy is computed 
+     * as n_correct_Answer/n_total_answer
+     */
     public static double computeAcc(Point[] trueLabel, double[] predictedLabel){
         double acc = 0;
         int truecount=0;
@@ -222,6 +244,7 @@ public class KNN {
 
     }
 
+    /* Write the data output to files using given format */
     public static void dataOutput(String fileName, Point[] dataTest, double[] predictedLabel){
         try {
             BufferedWriter out = new BufferedWriter(new FileWriter(fileName));
