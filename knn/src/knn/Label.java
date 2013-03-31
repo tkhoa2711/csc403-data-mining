@@ -10,32 +10,32 @@ package knn;
  */
 public class Label {
     public double label;
-    public double membersCount;
+    public double weight;
     
     
     public Label(double label) {
         this.label = label;
-        membersCount = 0;
+        weight = 0;
     }
     
-    public Label(double label,double memberCount) {
+    public Label(double label,double weight) {
         this.label = label;
-        this.membersCount = memberCount;
+        this.weight = weight;
     }
     
-    public void setMembersCount(int count){
-        this.membersCount = count;
+    public void setWeight(double weight){
+        this.weight = weight;
     }
     
     public double getLabel(){
         return this.label;
     }
     
-    public double getMembersCount(){
-        return this.membersCount;
+    public double getWeight(){
+        return this.weight;
     }
     
     public void addMember(double weight){
-        this.membersCount= this.membersCount+weight ;
+        this.weight= this.weight+weight ;
     }
 }
